@@ -1,18 +1,22 @@
 // shunmugam
 // pw - punitha
 
+// host: "127.0.0.1",
+// user: "root",
+// password: "shunmugam1502"
+
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
 const dataRouter = require("./routes/data-routes");
 const router = require("./routes/user-routes");
-
+const port = 3500;
 const app = express();
 
 var con = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "shunmugam1502",
+  host: "192.168.1.6",
+  user: "shunmugam",
+  password: "punitha",
 });
 
 app.use(express.json());
@@ -35,9 +39,9 @@ con.connect((err) => {
   });
 });
 
-app.listen(3500, (err) => {
-  if (err) console.log("error starting server");
-  console.log("server is listening to port: 3500");
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+  console.log(`http://localhost:${port}/`);
 });
 
 // const users = [];

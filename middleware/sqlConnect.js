@@ -1,8 +1,8 @@
 const mysql = require("mysql2");
 var con = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "shunmugam1502",
+  host: "192.168.1.6",
+  user: "shunmugam",
+  password: "punitha",
   database: "farmTranz",
 });
 con.connect((err) => {
@@ -10,3 +10,7 @@ con.connect((err) => {
   console.log("Connected!");
 });
 module.exports = con;
+
+// host: "127.0.0.1",
+// user: "root",
+// password: "shunmugam1502"

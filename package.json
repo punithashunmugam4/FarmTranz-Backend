@@ -1,28 +1,21 @@
 {
-  "name": "api",
-  "version": "1.0.0",
+  "name": "Farmtranz",
+  "version": "0.0.1",
+  "description": "Sample AppSail application with NodeJS and express framework.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
-  "keywords": [],
-  "description": "",
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "git": "^0.1.5",
     "jsonwebtoken": "^9.0.2",
-    "mysql": "^2.18.1",
-    "mysql2": "^3.11.0",
+    "mysql2": "^3.14.2",
+    "mysql3": "^0.7.4",
     "node-cache": "^5.1.2",
-    "nodemailer": "^6.10.0",
-    "nodemon": "^3.1.7",
-    "uuid": "^10.0.0"
-  },
-  "proxy": "http://localhost:3500"
+    "nodemailer": "^7.0.5",
+    "nodemon": "^3.1.10"
+  }
 }
