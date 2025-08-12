@@ -1,11 +1,9 @@
 const mysql = require("mysql2");
 var con = mysql.createConnection({
-  host: "192.168.1.6",
+  host: "103.26.110.189",
   user: "shunmugam",
   password: "punitha",
   database: "farmTranz",
-  port: 3306,
-  connectTimeout: 10000, // optional: increase timeout
 });
 con.connect((err) => {
   if (err) throw err;
