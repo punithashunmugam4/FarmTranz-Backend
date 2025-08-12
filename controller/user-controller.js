@@ -4,16 +4,12 @@ const con = require("../middleware/sqlConnect");
 const nodemailer = require("nodemailer");
 const NodeCache = require("node-cache");
 
-const getAllUser = async (req, res, next) => {
-  let users;
+const getAllUserDetails = async (req, res, next) => {
   const { username, password } = req.body;
   if (username == "punitadmin" && password == "savior") {
-    con.query(`select * from usercreds;`, (err, result) => {
+    con.query(`select * from userdetails;`, (err, result) => {
       console.log(result);
       if (err) throw err;
-      result.forEach((e) => {
-        e.password = "*********";
-      });
       return res.status(200).json(result);
     });
   } else {
@@ -22,23 +18,64 @@ const getAllUser = async (req, res, next) => {
 };
 
 const signUp = async (req, res, next) => {
-  const { username, email, password } = req.body;
+  con.query(
+    `CREATE TABLE IF NOT EXISTS userdetails(
+userid integer auto_increment,
+name varchar(50) NOT NULL ,
+email varchar(50) NOT NULL unique,
+username varchar(50) NOT NULL unique,
+address varchar(255)  NOT NULL,
+city varchar(255)  NOT NULL,
+state varchar(255)  NOT NULL,
+zipcode varchar(255)  NOT NULL,
+country varchar(255)  NOT NULL,
+contact varchar(25) NOT NULL,
+dob DATE NOT NULL,
+contract_users json,
+password varchar(255) not null,
+PRIMARY KEY (userid),
+createdAt TIMESTAMP default current_timestamp
+);`,
+    (err, result) => {
+      if (err) {
+        console.error("Error creating userdetails table:", err);
+        return res
+          .status(500)
+          .json({ message: "Error creating userdetails table" });
+      }
+      console.log("User details table created or already exists");
+    }
+  );
+
+  const {
+    name,
+    email,
+    address,
+    city,
+    state,
+    zipcode,
+    country,
+    contact,
+    dob,
+    contract_users,
+    password,
+  } = req.body;
   console.log(req.body);
+
   if (
-    username == "" ||
     password == "" ||
     email == "" ||
-    username == undefined ||
     password == undefined ||
     email == undefined
   ) {
     res.status(400).json({ message: "Error! Please enter values" });
   } else {
     function validatePassword(password) {
-      const regex =
-        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      // const regex =
+      //   /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-      return regex.test(password);
+      // return regex.test(password);
+      return true; //test code
     }
 
     if (!validatePassword(password)) {
@@ -51,55 +88,49 @@ const signUp = async (req, res, next) => {
       });
     } else {
       let hashedPassword = await bcrypt.hash(password, 10);
-      console.log(username, email, hashedPassword);
+      let username = email.split("@")[0].toLowerCase();
+      console.log(username, hashedPassword);
       con.query(
-        `select * from usercreds where username = '${username}';`,
+        `select * from userdetails where username =? or email= ?;`,
+        [username, email],
         (err, result) => {
           if (err) {
             existingUser = false;
           }
           let temp = result;
-          if (
-            temp != undefined &&
-            temp.length > 0 &&
-            temp[0].username == username.toLowerCase()
-          ) {
+          if (temp && temp.length > 0) {
             return res
               .status(400)
-              .json({ message: "User already exists! Login instead" });
+              .json({ message: "User/Mail id already exists! Login instead" });
           } else {
-            con.query(
-              `CREATE TABLE IF NOT EXISTS usercreds(
-                PersonID int NOT NULL AUTO_INCREMENT,
-                username varchar(255) NOT NULL,
-                password varchar(255) NOT NULL,
-                email varchar(255) NOT NULL,
-                PRIMARY KEY (PersonID) 
-                );`,
-              function (err, result) {
-                if (err) {
-                  return res
-                    .status(400)
-                    .json({ message: "Unable to create the table" });
-                } else {
-                  con.query(
-                    `insert into usercreds (username, password,email) values(?,?,?);`,
-                    [username, hashedPassword, email.toLowerCase()],
-                    (err, result) => {
-                      if (err) {
-                        return res
-                          .status(400)
-                          .json({ message: "Unable to insert into table" });
-                      } else {
-                        console.log("user added to db", result);
-                        res.status(201).json("Registration success");
-                      }
-                    }
-                  );
-                }
-                console.log("Table created if not exist", result);
+            const query = `INSERT INTO userdetails ( name, username,email, address, city, state, zipcode, country, contact, dob, contract_users,password  ) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`;
+            const values = [
+              name,
+              username,
+              email.toLowerCase(),
+              address,
+              city,
+              state,
+              zipcode,
+              country,
+              contact,
+              dob,
+              Array.isArray(contract_users)
+                ? JSON.stringify(contract_users)
+                : JSON.stringify([]),
+              hashedPassword,
+            ];
+            con.query(query, values, (err, result) => {
+              if (err) {
+                console.error("Error inserting user details:", err);
+                return res
+                  .status(500)
+                  .json({ message: "Error inserting user details" });
               }
-            );
+              return res
+                .status(201)
+                .json({ message: "User details inserted successfully" });
+            });
           }
         }
       );
@@ -113,7 +144,7 @@ const login = async (req, res, next) => {
   username = username.toLowerCase();
   console.log(username, password);
   con.query(
-    `select * from usercreds where username = ?;`,
+    `select * from userdetails where username = ?;`,
     [username],
     (err, result) => {
       if (err) throw err;
@@ -121,7 +152,9 @@ const login = async (req, res, next) => {
       if (
         temp != undefined &&
         temp.length > 0 &&
-        (temp[0].email == username || temp[0].email.split("@")[0] == username)
+        (temp[0].username == username ||
+          temp[0].email == username ||
+          temp[0].email.split("@")[0] == username)
       ) {
         let existingUser = temp[0];
         console.log(existingUser.password);
@@ -130,10 +163,10 @@ const login = async (req, res, next) => {
             console.log(response);
             if (response) {
               const accessToken = jwt.sign(
-                { id: existingUser.PersonID },
+                { id: existingUser.userid },
                 "secret123",
                 {
-                  expiresIn: "200s",
+                  expiresIn: "2000s",
                 }
               );
               //   console.log(accessToken);
@@ -157,108 +190,10 @@ const login = async (req, res, next) => {
     }
   );
 };
-const updateUserDetailsQuery = async (req, res, next) => {
-  const {
-    userid,
-    username,
-    email,
-    address,
-    city,
-    state,
-    zipcode,
-    country,
-    contact,
-    phone,
-    dob,
-    contracted_users,
-    user_type,
-  } = req.body;
-
-  const query = `UPDATE userdetails SET username = ?, email = ?, address = ?, city = ?, state = ?, zipcode = ?, country = ?, contact = ?, phone = ?, dob = ?, contracted_users = ?,user_type=? WHERE userid = ?`;
-  const values = [
-    username,
-    email,
-    address,
-    city,
-    state,
-    zipcode,
-    country,
-    contact,
-    phone,
-    dob,
-    Array.isArray(contracted_users)
-      ? JSON.stringify(contracted_users)
-      : JSON.stringify([]),
-    user_type,
-    userid,
-  ];
-  if (!userid || typeof userid !== "number") {
-    return res.status(400).json({ message: "Invalid user ID" });
-  }
-  con.query(query, values, (err, result) => {
-    if (err) {
-      console.error("Error updating user details:", err);
-      return res.status(500).json({ message: "Error updating user details" });
-    }
-    if (result.affectedRows > 0) {
-      return res
-        .status(200)
-        .json({ message: "User details updated successfully" });
-    } else {
-      return res.status(404).json({ message: "User not found" });
-    }
-  });
-};
-
-const insertUserDetails = async (req, res, next) => {
-  const {
-    userid,
-    username,
-    email,
-    address,
-    city,
-    state,
-    zipcode,
-    country,
-    contact,
-    phone,
-    dob,
-    contracted_users,
-    user_type,
-  } = req.body;
-  const query = `INSERT INTO userdetails (userid, username, email, address, city, state, zipcode, country, contact, phone, dob, contracted_users, user_type  ) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
-  const values = [
-    userid,
-    username,
-    email,
-    address,
-    city,
-    state,
-    zipcode,
-    country,
-    contact,
-    phone,
-    dob,
-    Array.isArray(contracted_users)
-      ? JSON.stringify(contracted_users)
-      : JSON.stringify([]),
-    user_type,
-  ];
-  con.query(query, values, (err, result) => {
-    if (err) {
-      console.error("Error inserting user details:", err);
-      return res.status(500).json({ message: "Error inserting user details" });
-    }
-    return res
-      .status(201)
-      .json({ message: "User details inserted successfully" });
-  });
-};
 
 const updateUserDetails = async (req, res, next) => {
   const {
-    userid,
-    username,
+    name,
     email,
     address,
     city,
@@ -266,43 +201,20 @@ const updateUserDetails = async (req, res, next) => {
     zipcode,
     country,
     contact,
-    phone,
     dob,
-    contracted_users,
-    user_type,
+    contract_users,
+    password,
   } = req.body;
-  if (!userid || !username || !email) {
+  const userid = req.userid;
+  if (!userid || !email) {
     return res
       .status(400)
       .json({ message: "User ID, username and email are required" });
   }
-  con.query(
-    `CREATE TABLE IF NOT EXISTS userdetails(
-    userid INT NOT NULL,
-    username varchar(255) NOT NULL,
-    email varchar(255) NOT NULL,
-    address varchar(255),
-    city varchar(255),
-    state varchar(255),
-    zipcode varchar(20),
-    country varchar(255),
-    contact varchar(255),
-    phone varchar(20),
-    dob DATE,
-    contracted_users JSON,
-    user_type varchar(50),
-    PRIMARY KEY (userid)
-    );`,
-    (err, result) => {
-      if (err) {
-        console.error("Error creating userdetails table:", err);
-        return res
-          .status(500)
-          .json({ message: "Error creating userdetails table" });
-      }
-      console.log("User details table created or already exists");
-    }
-  );
+  let username = req.username;
+  console.log("Password is: ", password);
+  let hashedPassword =
+    password === "" ? false : await bcrypt.hash(password, 10);
   con.query(
     `select * from userdetails where username = '${username}' or userid='${userid}';`,
     [username, userid],
@@ -310,10 +222,80 @@ const updateUserDetails = async (req, res, next) => {
       if (err) {
         console.error("Error updating user details:", err);
       }
-      if (result && result.length == 0) {
-        insertUserDetails(req, res, next);
+      if (!result || result.length == 0) {
+        return res.status(404).json({ message: "User not found" });
       } else {
-        updateUserDetailsQuery(req, res, next);
+        const query = `UPDATE userdetails SET name = ?,username=?, email = ?, address = ?, city = ?, state = ?, zipcode = ?, country = ?, contact = ?, dob = ?, contract_users = ?,password=? WHERE userid = ?`;
+        const values = [
+          name ? name : result[0].name,
+          email ? email.split("@")[0].toLowerCase() : result[0].username,
+          email ? email.toLowerCase() : result[0].email,
+          address ? address : result[0].address,
+          city ? city : result[0].city,
+          state ? state : result[0].state,
+          zipcode ? zipcode : result[0].zipcode,
+          country ? country : result[0].country,
+          contact ? contact : result[0].contact,
+          dob ? dob : result[0].dob,
+          contract_users
+            ? JSON.stringify(contract_users.split(","))
+            : JSON.stringify(result[0].contract_users),
+          password ? hashedPassword : result[0].password,
+          userid ? userid : result[0].userid,
+        ];
+        if (!userid || typeof userid !== "number") {
+          return res.status(400).json({ message: "Invalid user ID" });
+        }
+        con.query(query, values, (err, result) => {
+          if (err) {
+            console.error("Error updating user details:", err);
+            return res
+              .status(500)
+              .json({ message: "Error updating user details" });
+          }
+          if (result.affectedRows > 0) {
+            return res
+              .status(200)
+              .json({ message: "User details updated successfully" });
+          } else {
+            return res.status(404).json({ message: "User not found" });
+          }
+        });
+      }
+    }
+  );
+};
+
+const getUserDetails = async (req, res, next) => {
+  const username = req.query.username || req.username; // query - Mean user seeing other users details otherwise username from token being used for seeing own profile
+  console.log("Fetching user details for:", username);
+  if (!username) {
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
+  con.query(
+    `SELECT * FROM userdetails WHERE username = ?;`,
+    [username],
+    (err, result) => {
+      if (err) {
+        console.error("Error fetching user details:", err);
+        return res.status(500).json({ message: "Error fetching user details" });
+      }
+      console.log(result);
+      if (result.length > 0) {
+        const userDetails = result[0];
+        if (req.query.username) {
+          userDetails.password = "hidden"; // Mean user seeing other users details
+        }
+
+        // Parse JSON fields if they exist
+        if (userDetails.contract_users) {
+          userDetails.contract_users = userDetails.contract_users;
+        } else {
+          userDetails.contract_users = [];
+        }
+        return res.status(200).json(userDetails);
+      } else {
+        return res.status(404).json({ message: "User not found" });
       }
     }
   );
@@ -380,4 +362,10 @@ const verifyOTP = (req, res, next) => {
   }
 };
 
-module.exports = { getAllUser, signUp, login, updateUserDetails };
+module.exports = {
+  getAllUserDetails,
+  signUp,
+  login,
+  updateUserDetails,
+  getUserDetails,
+};

@@ -8,13 +8,16 @@ const auth = (req, res, next) => {
   if (!token) return res.sendStatus(401);
 
   jwt.verify(token, "secret123", async (err, user) => {
-    if (err) return res.sendStatus(403);
-    console.log(user.id);
+    if (err) {
+      console.log("Authentication error:", err);
+      return res.sendStatus(403);
+    }
     con.query(
-      `select * from usercreds where PersonID = '${user.id}';`,
+      `select * from userdetails where userid = '${user.id}';`,
       (err, res) => {
-        const userFound = res[0].user;
-        req.user = userFound;
+        req.username = res[0].username;
+        req.userid = user.id;
+        req.email = res[0].email;
         next();
       }
     );

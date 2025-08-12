@@ -4,6 +4,8 @@ var con = mysql.createConnection({
   user: "shunmugam",
   password: "punitha",
   database: "farmTranz",
+  port: 3306,
+  connectTimeout: 10000, // optional: increase timeout
 });
 con.connect((err) => {
   if (err) throw err;
