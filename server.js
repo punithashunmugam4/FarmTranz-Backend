@@ -14,9 +14,11 @@ const port = 3500;
 const app = express();
 
 var con = mysql.createConnection({
-  host: "192.168.1.6",
-  user: "shunmugam",
-  password: "punitha",
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT,
 });
 
 app.use(express.json());
@@ -24,16 +26,16 @@ app.use(cors());
 con.connect((err) => {
   if (err) throw err;
   console.log("Connected!");
-  con.query(`use farmTranz;`, function (err, result) {
+  con.query(`use ${process.env.MYSQLDATABASE};`, function (err, result) {
     console.log(result);
     if (err) {
-      con.query(`CREATE DATABASE farmTranz;`, function (err, result) {
-        console.log(result);
-        if (err) {
-          throw err;
-        }
-        console.log("Database created");
-      });
+      // con.query(`CREATE DATABASE farmTranz;`, function (err, result) {
+      console.log(result);
+      if (err) {
+        throw err;
+      }
+      console.log("Unable to connect db");
+      // });
     }
     console.log("Database connected");
   });
