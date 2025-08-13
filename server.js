@@ -14,9 +14,9 @@ const port = 3500;
 const app = express();
 
 var con = mysql.createConnection({
-  host: "192.168.1.6",
-  user: "shunmugam",
-  password: "punitha",
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
 });
 
 app.use(express.json());
