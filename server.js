@@ -17,7 +17,7 @@ var con = mysql.createConnection({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
+  database: process.env.MYSQL_DATABASE,
   port: process.env.MYSQLPORT,
 });
 
@@ -26,7 +26,7 @@ app.use(cors());
 con.connect((err) => {
   if (err) throw err;
   console.log("Connected!");
-  con.query(`use ${process.env.MYSQLDATABASE};`, function (err, result) {
+  con.query(`use ${process.env.MYSQL_DATABASE};`, function (err, result) {
     console.log(result);
     if (err) {
       // con.query(`CREATE DATABASE farmTranz;`, function (err, result) {
