@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/getalluserdetails", getAllUserDetails);
 router.post("/signup", signUp);
 router.post("/login", login);
-router.post("/update", auth, updateUserDetails);
+router.put("/update", auth, updateUserDetails);
 router.get("/getuserdetails", auth, getUserDetails);
 router.get("/validate", auth, (req, res, next) => {
   console.log("Req user: ", req.username);
