@@ -393,10 +393,11 @@ const addBids = async (req, res, next) => {
         return res.status(404).json({ message: "No Data found" });
       }
 
-      let all_bids = data[0].all_bids;
+      let all_bids = data[0].all_bids > 0 ? datadata[0].all_bids : [];
       let max_bids = data[0].max_bid;
       console.log("Existing max bid: ", max_bids);
-      let bid_exists = all_bids.some((e) => e.name === bid.name);
+      let bid_exists =
+        all_bids.length > 0 ? all_bids.some((e) => e.name === bid.name) : false;
       if (bid_exists) {
         if (
           bid.submit_amount === undefined ||
