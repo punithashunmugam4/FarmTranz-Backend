@@ -187,7 +187,7 @@ const addData = async (req, res, auth) => {
     };
 
     Object.keys(optional_defaults).forEach((key) => {
-      if (typeof data[key] === "undefined" || data[key] === null) {
+      if (typeof data[key] === undefined || data[key] === null) {
         data[key] = optional_defaults[key];
       }
     });
