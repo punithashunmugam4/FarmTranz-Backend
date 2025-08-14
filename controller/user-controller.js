@@ -268,6 +268,7 @@ const updateUserDetails = async (req, res, next) => {
   let userid = req.userid;
   let username = req.username;
   let keys = Object.keys(req.body);
+  let data = { ...req.body, name: username, userid };
   keys.forEach((e) => {
     const query = `UPDATE userdetails SET ${e} = ? WHERE userid = ?;`;
     if (typeof data[e] === "object") {
