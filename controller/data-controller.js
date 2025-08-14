@@ -443,9 +443,9 @@ const addBids = async (req, res, next) => {
             .json({ message: "Bid amount is less than minimum bid" });
         }
         all_bids.push(bid);
-        console.log(" maxbids.submitaount: ", max_bids.submit_amount);
+        console.log(" maxbids.submitamount: ", max_bids?.submit_amount);
         if (
-          !max_bids.submit_amount ||
+          !max_bids?.submit_amount ||
           parseFloat(bid.submit_amount) > parseFloat(max_bids.submit_amount)
         ) {
           max_bids = bid;
