@@ -85,8 +85,6 @@ const addData = async (req, res, auth) => {
     max_bid,
     distance,
     weight,
-    quantity,
-    product_grade,
     image_path,
     visible_user,
     additional_info,
@@ -109,9 +107,7 @@ const addData = async (req, res, auth) => {
       "category",
       "weight",
       "distance",
-      "quantity",
       "contact",
-      "product_grade",
       "additional_info",
       "pick_up_range_start_date",
       "pick_up_range_end_date",
@@ -127,7 +123,7 @@ const addData = async (req, res, auth) => {
     const placeholders = [];
     const values = [];
     allColumns.forEach((col) => {
-      if (typeof data[col] !== "undefined") {
+      if (data[col] !== undefined) {
         columns.push(col);
         placeholders.push("?");
         // Stringify JSON fields if needed
@@ -178,8 +174,6 @@ const addData = async (req, res, auth) => {
     let optional_defaults = {
       max_bid: {},
       distance: 0,
-      quantity: "",
-      product_grade: "",
       image_path: [],
       visible_user: [],
       additional_info: "",
@@ -187,7 +181,7 @@ const addData = async (req, res, auth) => {
     };
 
     Object.keys(optional_defaults).forEach((key) => {
-      if (typeof data[key] === undefined || data[key] === null) {
+      if (data[key] === undefined || data[key] === null) {
         data[key] = optional_defaults[key];
       }
     });
@@ -264,9 +258,7 @@ product varchar(25) NOT NULL,
 category varchar(25) NOT NULL,
 weight FLOAT NOT NULL,
 distance FLOAT ,
-quantity varchar(50) NOT NULL,
 contact varchar(25) NOT NULL,
-product_grade varchar(5) NOT NULL,
 additional_info varchar(100) NOT NULL,
 pick_up_range_start_date DATE NOT NULL,
 pick_up_range_end_date DATE,
