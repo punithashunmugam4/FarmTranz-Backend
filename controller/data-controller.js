@@ -1,4 +1,3 @@
-const User = require("../routes/user-routes");
 const con = require("../middleware/sqlConnect");
 const auth = require("../middleware/authenticate");
 
@@ -39,7 +38,7 @@ const getVisibleLoads = async (req, res, next) => {
   // Get all loads that are visible to the user
   const username = req.username;
   con.query(
-    `select * from load_details where visible_user like ? or visible_user = '[]'`,
+    `select * from load_details where visible_user like ? or visible_user like '%[]%'`,
     [`%${username}%`],
     (err, result) => {
       if (err) {
@@ -195,7 +194,7 @@ const addData = async (req, res, auth) => {
         console.log("Insert result is  " + result);
         res.status(201).json({
           message: "Data added successfully",
-          auction_id: auction_id,
+          result: result,
         });
         console.log("details added");
       }

@@ -10,6 +10,7 @@ const cors = require("cors");
 const mysql = require("mysql2");
 const dataRouter = require("./routes/data-routes");
 const router = require("./routes/user-routes");
+const NotificationRouter = require("./routes/notification-routes");
 const port = 3500;
 const app = express();
 
@@ -50,3 +51,4 @@ app.listen(port, () => {
 // const sessions = [];
 app.use("/api/user", router); // if we have const portal in url we can give as app.use('/api/user',router) whatever we give path will be added to given path
 app.use("/api/data", dataRouter);
+app.use("/api/notifications", NotificationRouter);
