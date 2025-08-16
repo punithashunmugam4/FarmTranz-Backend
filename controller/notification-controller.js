@@ -26,6 +26,14 @@ const getMyNotification = async (req, res, next) => {
         if (!result) {
           return res.status(404).json({ message: "No Notifications found" });
         }
+        con.query(
+          `DELETE FROM notifications WHERE username=? AND id NOT IN (SELECT id from (SELECT id FROM notifications WHERE username=? ORDER BY createdAt DESC LIMIT 20) as t)`,
+          [username, username],
+          (err, result) => {
+            if (err) throw err;
+            console.log("Old notification removed successfully");
+          }
+        );
         return res.status(200).json({ result });
       }
     );
@@ -53,26 +61,16 @@ const sendNotification = async (req, res, next) => {
       }
     );
 
-    con
-      .query(
-        `INSERT INTO notifications (username, message) VALUES (?, ?)`,
-        [username, message],
-        function (err, result) {
-          if (err) throw err;
-        }
-      )
-      .then(
-        con.query(
-          `DELETE FROM notifications WHERE username=? AND id NOT IN (SELECT id from (SELECT id FROM notifications WHERE username=? ORDER BY createdAt DESC LIMIT 20) as t)`,
-          [username, username],
-          (err, result) => {
-            if (err) throw err;
-            return res
-              .status(200)
-              .json({ message: "Notification sent successfully" });
-          }
-        )
-      );
+    con.query(
+      `INSERT INTO notifications (username, message) VALUES (?, ?)`,
+      [username, message],
+      function (err, result) {
+        if (err) throw err;
+        return res
+          .status(200)
+          .json({ message: "Notification sent successfully" });
+      }
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error sending notification" });
