@@ -8,7 +8,7 @@ const getMyNotification = async (req, res, next) => {
     id integer auto_increment,
     username varchar(50) not null ,
     message varchar(255) not null ,
-    read_mark boolean default false ,
+    is_read boolean default false ,
     createdAt TIMESTAMP default current_timestamp ,
     PRIMARY KEY (id)
     );`,
@@ -52,7 +52,7 @@ const sendNotification = async (req, res, next) => {
     id integer auto_increment,
     username varchar(50) not null ,
     message varchar(255) not null ,
-    read_mark boolean default false ,
+    is_read boolean default false ,
     createdAt TIMESTAMP default current_timestamp ,
     PRIMARY KEY (id)
     );`,
@@ -97,7 +97,7 @@ const clearMyNotification = async (req, res, next) => {
 };
 
 const markAsReadUnRead = async (req, res, next) => {
-  const { read_mark, id } = req.body;
+  const { is_read, id } = req.body;
   try {
     con.query(
       `select * from notifications where id= ?`,
@@ -109,8 +109,8 @@ const markAsReadUnRead = async (req, res, next) => {
           return res.status(404).json({ message: "No Notifications found" });
         }
         con.query(
-          `UPDATE notifications SET read_mark = ? WHERE id = ?;`,
-          [read_mark, id],
+          `UPDATE notifications SET is_read = ? WHERE id = ?;`,
+          [is_read, id],
           function (err, result) {
             if (err) throw err;
             return res.status(200).json({ result });
@@ -139,7 +139,7 @@ const markAllread = (req, res, next) => {
         if (result.length > 0) {
           result.map((item) => {
             con.query(
-              `UPDATE notifications SET read_mark = ? WHERE id = ?;`,
+              `UPDATE notifications SET is_read = ? WHERE id = ?;`,
               [true, item.id],
               function (err, result) {
                 if (err) throw err;
